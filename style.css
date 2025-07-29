@@ -133,7 +133,7 @@ p {
     top: 0;
     width: 100%;
     background: linear-gradient(180deg, var(--neutral-50) 0%, #E0F2FE 100%); /* خلفية غير بيضاء */
-    backdrop-filter: blur(12px);
+   
     box-shadow: var(--shadow-md);
     z-index: 1000;
     transition: var(--transition-normal);
@@ -733,7 +733,6 @@ p {
 }
 
 .team-image {
-    
     width: 100%;
     height: 300px;
     overflow: hidden;
@@ -1240,4 +1239,52 @@ p {
     background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
     transition: width 0.4s ease;
     z-index: 999;
+}
+
+/* أزرار الطباعة والحفظ */
+.action-buttons {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    gap: var(--spacing-md);
+    z-index: 1000;
+}
+
+.print-btn,
+.save-pdf-btn {
+    border-radius: 50px;
+    box-shadow: var(--shadow-lg);
+    transition: var(--transition-fast);
+}
+
+.save-pdf-btn {
+    background: var(--secondary-color);
+    color: white;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+.save-pdf-btn:hover {
+    background: var(--primary-color);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-xl);
+}
+
+.save-pdf-btn:active {
+    transform: translateY(0);
+}
+
+/* إخفاء الأزرار عند تصدير PDF */
+.no-pdf {
+    display: block;
+}
+
+@media print {
+    .no-pdf {
+        display: none !important;
+    }
 }

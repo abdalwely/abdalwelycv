@@ -186,7 +186,28 @@ function animateOnScroll() {
         animationObserver.observe(element);
     });
 }
-
+// دالة لحفظ السيرة الذاتية كملف PDF
+function saveResumeAsPDF() {
+    const element = document.querySelector('main');
+    const buttons = document.querySelector('.action-buttons');
+    
+    // إخفاء الأزرار مؤقتًا
+    buttons.classList.add('no-pdf');
+    
+    const opt = {
+        margin: 0.5,
+        filename: 'Abdulwali_Bakeel_Resume.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+    
+    html2pdf().from(element).set(opt).save().then(() => {
+        // إعادة إظهار الأزرار بعد الحفظ
+        buttons.classList.remove('no-pdf');
+        showNotification('تم حفظ السيرة الذاتية بنجاح!', 'success');
+    });
+}
 // معالجة إرسال النموذج
 function handleFormSubmission(e) {
     e.preventDefault();
@@ -214,12 +235,22 @@ function handleFormSubmission(e) {
     submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإرسال...';
     submitButton.disabled = true;
     
+    // إنشاء رابط WhatsApp
+    const phoneNumber = '+967778447779';
+    const whatsappMessage = `الاسم: ${encodeURIComponent(name)}\nالبريد الإلكتروني: ${encodeURIComponent(email)}\nالرسالة: ${encodeURIComponent(message)}`;
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${whatsappMessage}`;
+    
     setTimeout(() => {
-        showNotification('تم إرسال رسالتك بنجاح! سأتواصل معك قريباً', 'success');
+        showNotification('تم إرسال رسالتك بنجاح! جاري التوجيه إلى WhatsApp...', 'success');
         e.target.reset();
         
         submitButton.innerHTML = originalText;
         submitButton.disabled = false;
+        
+        // إعادة التوجيه إلى WhatsApp
+        setTimeout(() => {
+            window.location.href = whatsappUrl;
+        }, 1000); // تأخير قصير لعرض الإشعار
     }, 2000);
 }
 
@@ -229,6 +260,52 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
+// عرض الإشعارات
+function showNotification(message, type = 'info') {
+    // إزالة الإشعارات السابقة
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas fa-${getNotificationIcon(type)}"></i>
+            <span>${message}</span>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    
+    // إضافة الأنماط
+    notification.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: ${getNotificationColor(type)};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1001;
+        animation: slideInRight 0.3s ease;
+        max-width: 400px;
+        min-width: 300px;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // إزالة الإشعار تلقائياً بعد 5 ثوان
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
+}
 // عرض الإشعارات
 function showNotification(message, type = 'info') {
     // إزالة الإشعارات السابقة
@@ -485,20 +562,22 @@ function printResume() {
 
 // إضافة زر الطباعة
 function addPrintButton() {
+    const actionButtons = document.createElement('div');
+    actionButtons.className = 'action-buttons no-pdf';
+
     const printButton = document.createElement('button');
     printButton.innerHTML = '<i class="fas fa-print"></i> طباعة السيرة الذاتية';
     printButton.className = 'btn btn-secondary print-btn';
-    printButton.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        z-index: 1000;
-        border-radius: 50px;
-        box-shadow: var(--shadow-lg);
-    `;
-    
     printButton.addEventListener('click', printResume);
-    document.body.appendChild(printButton);
+
+    const saveButton = document.createElement('button');
+    saveButton.innerHTML = '<i class="fas fa-download"></i> حفظ السيرة الذاتية PDF';
+    saveButton.className = 'btn save-pdf-btn';
+    saveButton.addEventListener('click', saveResumeAsPDF);
+
+    actionButtons.appendChild(printButton);
+    actionButtons.appendChild(saveButton);
+    document.body.appendChild(actionButtons);
 }
 
 // تشغيل زر الطباعة على أجهزة سطح المكتب
